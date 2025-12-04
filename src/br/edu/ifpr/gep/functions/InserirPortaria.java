@@ -96,7 +96,7 @@ public class InserirPortaria {
         }
 
         //Cria a portaria inserida pelo usuário
-        Portaria nova = new Portaria(emissor, numero, dataStr, membros);
+        Portaria nova = new Portaria(emissor, numero, data, membros);
 
         if (repo.insert(nova)) {
             System.out.println("Portaria inserida com sucesso.");
