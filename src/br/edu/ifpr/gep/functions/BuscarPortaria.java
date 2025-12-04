@@ -177,17 +177,22 @@ public class BuscarPortaria {
     public void buscarPortariaPorMembro(List<Portaria> portarias) {
         System.out.println("\n==> BUSCAR POR MEMBRO <==");
         String nome;
+
         while (true) {
             System.out.print("Digite o nome completo (com acento, caso tenha) do membro: ");
             System.out.println("\n>>> Para cancelar, pressione [ENTER] <<<");
+
             nome = scanner.nextLine().trim();
             if (nome.isEmpty()) return;
+
             if (nome.matches("^[\\p{L} ]+$")) break;
+
             vali.exibirValorInvalido();
         }
 
-        List<Portaria> resultados = repo.findByMembro(List.of(nome), StringSearch.PARTIAL, false);
+        List<Portaria> resultados = repo.findByMembro(nome);
         imprimirResumoQuantidade(resultados, nome);
         most.mostrar(resultados);
     }
+
 }
