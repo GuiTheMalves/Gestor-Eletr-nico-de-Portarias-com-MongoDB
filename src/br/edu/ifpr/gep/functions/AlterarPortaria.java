@@ -143,10 +143,8 @@ public class AlterarPortaria {
 					vali.exibirValorInvalido();
 					continue;
 				}
-				String dataAtual = port.getPublicação();
-				LocalDate dataNova = repo.strParaLocalDate(dataAtual);
-				//Tenta construir a nova data para validar dia/mês (pode lançar DateTimeException)
-				LocalDate novaData = LocalDate.of(dataNova.getYear(), dataNova.getMonthValue(), novoDia);
+				LocalDate dataAtual = port.getPublicação();
+				LocalDate novaData = LocalDate.of(dataAtual.getYear(), dataAtual.getMonthValue(), novoDia);
 
 				System.out.printf("Confirmar alteração para %02d/%02d/%d? (S/N)%n",
 						novaData.getDayOfMonth(), novaData.getMonthValue(), novaData.getYear());
@@ -202,9 +200,8 @@ public class AlterarPortaria {
 					vali.exibirValorInvalido();
 					continue;
 				}
-				String dataAtual = port.getPublicação();
-				LocalDate dataNova = repo.strParaLocalDate(dataAtual);
-				LocalDate novaData = LocalDate.of(dataNova.getYear(), novoMes, dataNova.getDayOfMonth());
+				LocalDate dataAtual = port.getPublicação();
+				LocalDate novaData = LocalDate.of(dataAtual.getYear(), dataAtual.getMonthValue(), novoMes);
 
 				System.out.printf("Confirmar alteração para %02d/%02d/%d (S/N)%n",
 						novaData.getDayOfMonth(), novaData.getMonthValue(), novaData.getYear());
@@ -273,9 +270,8 @@ public class AlterarPortaria {
 					continue;
 				}
 				//Tenta criar a data para validar dias de cada mês (inclui ano bissexto)
-				String dataAtual = port.getPublicação();
-				LocalDate dataNova = repo.strParaLocalDate(dataAtual);
-				LocalDate novaData = LocalDate.of(dataNova.getYear(), novoMes, novoDia);
+				LocalDate dataAtual = port.getPublicação();
+				LocalDate novaData = LocalDate.of(dataAtual.getYear(), novoMes, novoDia);
 
 				System.out.printf("Confirmar alteração para %02d/%02d/%d (S/N)%n",
 				novaData.getDayOfMonth(), novaData.getMonthValue(), novaData.getYear());
