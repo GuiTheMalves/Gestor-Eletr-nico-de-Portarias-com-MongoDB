@@ -310,4 +310,5 @@ public class ExcluirPortaria {
 		}
 		System.out.println("Total excluído: " + contador);
 	}
+
 }
