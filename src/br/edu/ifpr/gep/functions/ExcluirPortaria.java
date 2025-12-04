@@ -38,48 +38,59 @@ public class ExcluirPortaria {
 		System.out.println("4 - Data");
 		System.out.println("5 - Voltar");
 	}
+	
+	
 	public void chamarExcluir() {
-		exibirMenuExcluir();
-		String opcao = scanner.nextLine().trim();
-		int entrada;
-		try {
-		    entrada = Integer.parseInt(opcao);
-		} catch(NumberFormatException e) {
-		    vali.exibirValorInvalido();
-		    return;
-		}
-		if(entrada == 1) {
-			excluirUnico();
-		}
-		else if(entrada == 2) {
-			excluirTudo();
-		}
-		else if(entrada == 3) {
-			exibirMenuPorParametro();
-			int entradaParametro = scanner.nextInt();
-			if(entradaParametro == 1) {
-				excluirPorEmissor();
-			}
-			else if(entradaParametro == 2) {
-				excluirPorNumero();
-			}
-			else if(entradaParametro == 3) {
-				excluirPorAno();
-			}
-			else if(entradaParametro == 4) {
-				excluirPorData();
-			}
-			else if(entradaParametro == 5) {
-				
-			}
-		}
+	    exibirMenuExcluir();
+	    String opcao = scanner.nextLine().trim();
+
+	    switch (opcao) {
+	        case "1":
+	            excluirUnico();
+	            break;
+	        case "2":
+	            excluirTudo();
+	            break;
+	        case "3":
+	            chamarExcluirPorParametro();
+	            break;
+	        case "4":
+	            return; 
+	        default:
+	            System.out.println("Opção inválida! Tente novamente.");
+	    }
 	}
+
+ 	public void chamarExcluirPorParametro() {
+ 		exibirMenuPorParametro();
+ 	    String opcaoParametro = scanner.nextLine().trim();
+ 	    int entradaParametro;
+
+ 	    try {
+ 	        entradaParametro = Integer.parseInt(opcaoParametro);
+ 	    } catch(NumberFormatException e) {
+ 	        vali.exibirValorInvalido();
+ 	        return;
+ 	    }
+
+ 	    switch (entradaParametro) {
+ 	        case 1: excluirPorEmissor(); break;
+ 	        case 2: excluirPorNumero(); break;
+ 	        case 3: excluirPorAno(); break;
+ 	        case 4: excluirPorData(); break;
+ 	        case 5: return;
+ 	        default:
+ 	            vali.exibirValorInvalido();
+ 	    }
+ 	}
+
 	//Responsável por realizar as operações relacionadas a exclusão de todas as portarias
 	public void excluirTudo() {
 			while(true) {
 			System.out.println("Excluir todas as portarias? (S/n)");
 		    System.out.println(">>> Para cancelar, pressione [ENTER] <<<");
 			String confirmar = scanner.nextLine();
+			if(confirmar.isEmpty()) return;
 			if (confirmar.equalsIgnoreCase("s")) {
 			int registrs = repo.delete();
 			System.out.println("\n==> EXCLUIR TUDO <==");
@@ -190,8 +201,7 @@ public class ExcluirPortaria {
 	    }
 	    int contador = 0;
 	    for (Portaria p : lista) {
-	    	ParseValores pava = new ParseValores();
-			LocalDate data = pava.ParseData(p.getPublicação());
+			LocalDate data = p.getPublicação();
 			if (data == null) {  
 		        System.out.println("Data inválida na portaria: " + p.getPublicação());
 		        continue;  // pula essa portaria ao invés de quebrar o programa
@@ -226,8 +236,7 @@ public class ExcluirPortaria {
 		if(!scanner.nextLine().equalsIgnoreCase("s")) return;
 		int contador = 0;
 		for(Portaria p : lista) {
-			ParseValores pava = new ParseValores();
-			LocalDate data = pava.ParseData(p.getPublicação());
+			LocalDate data = p.getPublicação();
 			if (data == null) {  
 		        System.out.println("Data inválida na portaria: " + p.getPublicação());
 		        continue;  // pula essa portaria ao invés de quebrar o programa
@@ -250,10 +259,9 @@ public class ExcluirPortaria {
 			vali.exibirValorInvalido();
 			return;
 		}
-		ParseValores pava = new ParseValores();
 		List<Portaria> lista = repo.findAll()
 		            .stream()
-		            .filter(p -> { LocalDate data = pava.ParseData(p.getPublicação());
+		            .filter(p -> { LocalDate data = p.getPublicação();
 		            return data != null && data.getYear() == ano; })
 		            .collect(Collectors.toList());
 		if(lista.isEmpty()) {
@@ -265,7 +273,7 @@ public class ExcluirPortaria {
 		if(!scanner.nextLine().equalsIgnoreCase("s")) return;
 		int contador = 0;
 		for(Portaria p : lista) {
-			LocalDate data = pava.ParseData(p.getPublicação());
+			LocalDate data = p.getPublicação();
 			if (data == null) {  
 		        System.out.println("Data inválida na portaria: " + p.getPublicação());
 		        continue;  // pula essa portaria ao invés de quebrar o programa
@@ -300,7 +308,7 @@ public class ExcluirPortaria {
 		int contador = 0;
 		for(Portaria p: lista) {
 			ParseValores pava = new ParseValores();
-			LocalDate data1 = pava.ParseData(p.getPublicação());
+			LocalDate data1 = p.getPublicação();
 			if (data == null) {  
 		        System.out.println("Data inválida na portaria: " + p.getPublicação());
 		        continue;  // pula essa portaria ao invés de quebrar o programa
@@ -310,5 +318,4 @@ public class ExcluirPortaria {
 		}
 		System.out.println("Total excluído: " + contador);
 	}
-
 }
