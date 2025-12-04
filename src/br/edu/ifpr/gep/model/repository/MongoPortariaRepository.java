@@ -15,12 +15,14 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 
 import br.edu.ifpr.gep.model.Portaria;
 import br.edu.ifpr.gep.model.StringSearch;
+import br.edu.ifpr.gep.model.utils.ParseValores;
 import br.edu.ifpr.gep.model.utils.ValidarEntradaUsuario;
 
 /**
@@ -112,12 +114,13 @@ public enum MongoPortariaRepository {
      *  emissor + numero + anoPublicacao
      */
     public boolean update(Portaria portaria) {
-
+    	ParseValores pava = new ParseValores();
+    	LocalDate data = portaria.getPublicação();
         // Filtro para encontrar a portaria correta (chave composta)
         Bson filter = Filters.and(
                 Filters.eq("emissor", portaria.getEmissor()),
                 Filters.eq("numero", portaria.getNúmero()),
-                Filters.eq("anoPublicacao", portaria.getPublicação().getYear())
+                Filters.eq("anoPublicacao", data.getYear())
         );
 
         // Lista de atualizações possíveis
@@ -260,26 +263,32 @@ public enum MongoPortariaRepository {
     private Portaria docToPortaria(Document doc) {
         Portaria p = new Portaria();
 
-        p.setEmissor(doc.getInteger("emissor"));
-        p.setNúmero(doc.getLong("numero"));
-
-        // data foi salva como string ISO, então precisa converter de volta
+        p.setEmissor(doc.getInteger("emissor"));          // OK
+        p.setNúmero(doc.getLong("numero"));               // OK
+        // pegar string ISO do banco
         String dataStr = doc.getString("publicacao");
-        p.setPublicação(LocalDate.parse(dataStr));
 
-        // lista de membros
+        // converter para LocalDate
+        LocalDate data = LocalDate.parse(dataStr); // ISO já funciona direto
+
+        p.setPublicação(data); // OK
+
         List<String> membros = doc.getList("membros", String.class);
-        p.setMembro(membros);
+        p.setMembro(membros != null ? membros : new ArrayList<>());
 
         return p;
     }
+
     
     private Portaria docToGep(Document doc) {
 	      Portaria port = new Portaria();
 	      
 	      port.setEmissor(doc.getInteger("Emissor"));
 	      port.setNúmero(doc.getLong("Numero"));
-	      port.setPublicação(doc.getString("Publicacao"));
+	      String dataStr = doc.getString("publicacao");
+	      LocalDate data = LocalDate.parse(dataStr); // ISO já funciona direto
+
+	      port.setPublicação(data); // OK
 	      List<String> mem = doc.getList("Membro", String.class);
 	      port.setMembro(mem);
 	    
@@ -287,7 +296,7 @@ public enum MongoPortariaRepository {
 	      return port;
 	   }
     
-    public List<Portaria> findByMembro(List<String> nomes, StringSearch mode, boolean requireAll) {
+    /*public List<Portaria> findByMembro(List<String> nomes, StringSearch mode, boolean requireAll) {
 		if (nomes == null || nomes.isEmpty()) return Collections.emptyList();
 		
 			List<Bson> conds = new ArrayList<>();
@@ -300,8 +309,9 @@ public enum MongoPortariaRepository {
 		boolean exact = (mode == StringSearch.EXACT || mode == StringSearch.EXACT_CASE_INSENSITIVE);
 		
 		
-		String regex = exact ? "(^|,\s*)" + q + "(\s*,|$)" : q;
-		
+		String regex = exact
+			    ? "(^|,\\s*)" + q + "(\\s*,|$)"
+			    : q;		
 		int flags = (mode == StringSearch.EXACT_CASE_INSENSITIVE || mode == StringSearch.PARTIAL_CASE_INSENSITIVE)
 		? Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
 		: 0;
@@ -321,20 +331,68 @@ public enum MongoPortariaRepository {
 		        ports.add(docToGep(d));
 		    }
 		return ports;
-   }
+   }*/
+    /*public List<Portaria> findByMembro(List<String> nomes, StringSearch mode, boolean requireAll) {
+        if (nomes == null || nomes.isEmpty()) return Collections.emptyList();
+
+        List<Bson> conds = new ArrayList<>();
+        int flags = (mode == StringSearch.EXACT_CASE_INSENSITIVE || mode == StringSearch.PARTIAL_CASE_INSENSITIVE)
+                ? Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+                : 0;
+
+        for (String n : nomes) {
+            if (n == null) continue;
+            n = n.trim();
+            if (n.isEmpty()) continue;
+
+            Pattern p = Pattern.compile(Pattern.quote(n), flags);
+            System.out.println("DEBUG: adicionando regex para '" + n + "' -> " + p.pattern());
+            conds.add(Filters.regex("Membro", p)); // troque "Membro" se necessário
+        }
+
+        if (conds.isEmpty()) return Collections.emptyList();
+        Bson filtro = requireAll ? Filters.and(conds) : Filters.or(conds);
+
+        List<Portaria> ports = new ArrayList<>();
+        for (Document d : coll.find(filtro)) {
+            ports.add(docToGep(d));
+        }
+        return ports;
+    }*/
+    
+    public List<Portaria> findByMembro(String parteDoNome) {
+        List<Portaria> lista = new ArrayList<>();
+
+        // REGEX case-insensitive
+        Document filtroRegex = new Document("$regex", parteDoNome)
+                .append("$options", "i");
+
+        // Campo correto: "membros"
+        Document query = new Document("membros", filtroRegex);
+
+        try (MongoCursor<Document> cursor = coll.find(query).iterator()) {
+            while (cursor.hasNext()) {
+                Document doc = cursor.next();
+                lista.add(docToPortaria(doc));  // <- método correto
+            }
+        }
+
+        return lista;
+    }
     
 
     /**
      * Converte um objeto Portaria para Document BSON.
      */
     private Document portariaToDoc(Portaria p) {
+        LocalDate data = p.getPublicação();
 
         return new Document()
                 .append("emissor", p.getEmissor())
                 .append("numero", p.getNúmero())
-                // salva data como texto padrão ISO (yyyy-MM-dd)
-                .append("publicacao", p.getPublicação().toString())
-                .append("anoPublicacao", p.getPublicação().getYear())
-                .append("membros", p.getMembro());
+                .append("publicacao", p.getPublicação()) // salva como String
+                .append("anoPublicacao", data.getYear())
+                .append("membros", p.getMembro()); // lista de Strings
     }
+
 }
