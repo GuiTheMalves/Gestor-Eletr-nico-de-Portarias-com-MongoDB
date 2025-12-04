@@ -80,9 +80,12 @@ public class TUI {
         	 else if(opcaoExc.charAt(0) == '2') {
         		 excl.excluirTudo();
         		 break;
-        	 } 
+        	 }
+        	 else if(opcaoExc.charAt(0) == '3') {
+        		 excl.chamarExcluirPorParametro();
+        	 }
         	 ///VOLTAR AO MENU PRINCIPAL
-        	 else if(opcaoExc.charAt(0) == '3')    {
+        	 else if(opcaoExc.charAt(0) == '4')    {
         		 break;
         	 } else {
         		 vali.exibirValorInvalido();		        	 }
