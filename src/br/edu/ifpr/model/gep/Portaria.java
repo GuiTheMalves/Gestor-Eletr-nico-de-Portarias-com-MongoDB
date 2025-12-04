@@ -17,7 +17,7 @@ public class Portaria {
    private Long número;
 
    //Data de publicação da portaria
-   private String publicação;
+   private LocalDate publicação;
 
    //Lista que contém os membros associados à portaria
    private List<String> membros = new ArrayList<>();
@@ -27,7 +27,7 @@ public class Portaria {
 
    //Construtor que recebe todos os atributos da classe
    public Portaria(Integer emissor, Long número,
-                   String publicação, List<String> membros) {
+                   LocalDate publicação, List<String> membros) {
        this.emissor = emissor;
        this.número = número;
        this.publicação = publicação;
@@ -37,7 +37,7 @@ public class Portaria {
    //Construtor que utiliza um enum PortariaEmissor como parâmetro para "emissor"
    //Ele converte o enum em seu índice numérico e delega ao outro construtor
    public Portaria(PortariaEmissor emissor, Long número,
-                   String publicação, List<String> membros) {
+                   LocalDate publicação, List<String> membros) {
        this(emissor.index(), número, publicação, membros);
    }
 
@@ -62,13 +62,13 @@ public class Portaria {
    }
 
    //Retorna a data de publicação
-   public String getPublicação() {
+   public LocalDate getPublicação() {
        return publicação;
    }
 
    //Define a data de publicação
-   public void setPublicação(String string) {
-       this.publicação = string;
+   public void setPublicação(LocalDate publicação) {
+       this.publicação = publicação;
    }
 
    //Retorna a lista completa de membros
