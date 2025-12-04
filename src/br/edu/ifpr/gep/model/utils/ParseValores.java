@@ -28,5 +28,9 @@ public class ParseValores {
         }
         return numero;
 	}
+	public String ParseString(LocalDate data) {
+		String dataStr = formato.format(data);
+		return dataStr;
+	}
 	
 }
